@@ -18,34 +18,31 @@ Simple Telegram bot to get weather updates for any city using a weather API.
    ```bash
    git clone https://github.com/KB4C1/weather-Telegram-bot.git
    cd weather-Telegram-bot
-Create a config.py file in the project root with the following content:
+2.Create a config.py file in the project root with the following content:
 
 python
 Copy
 Edit
-wAPI = "YOUR_WEATHER_API_TOKEN"
+wAPI = "OpenWeatherMap_API_TOKEN"
 BOT_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN"
 Replace "YOUR_WEATHER_API_TOKEN" and "YOUR_TELEGRAM_BOT_TOKEN" with your actual tokens.
 
-Install required packages:
+3. Install required packages:
 
 bash
 Copy
 Edit
 pip install -r requirements.txt
-Run the bot:
+4. Run the bot:
 
 bash
 Copy
 Edit
 python bot.py
-Usage
+## Usage
 Start the bot on Telegram with /start
 
-Use /weather <city> to get weather info for a city
-
-Notes
-Keep your tokens secret — do not share config.py publicly!
+To get Weather enter city name
 
 Make sure to have a stable internet connection for API calls
 
