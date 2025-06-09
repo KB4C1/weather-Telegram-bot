@@ -27,7 +27,8 @@ Replace "YOUR_WEATHER_API_TOKEN" and "YOUR_TELEGRAM_BOT_TOKEN" with your actual 
 3. Install required packages:
    
 pip install -r requirements.txt
-5. Run the bot:
+
+4. Run the bot:
 
 python bot.py
 ## Usage
