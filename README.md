@@ -1,4 +1,4 @@
-# Weather Telegram Bot 🌤️🤖
+#                     Weather Telegram Bot 🌤
 
 Simple Telegram bot to get weather updates for any city using a weather API.
 
@@ -18,7 +18,7 @@ Simple Telegram bot to get weather updates for any city using a weather API.
    ```bash
    git clone https://github.com/KB4C1/weather-Telegram-bot.git
    cd weather-Telegram-bot
-2.Create a config.py file in the project root with the following content:
+**2.Create a config.py file in the project root with the following content:**
 
 python
 Copy
