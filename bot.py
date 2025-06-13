@@ -15,13 +15,9 @@ from config import BOT_TOKEN
 from weather import get_weather
 from utils import load, save, regions, get_cities
 
-# --- Validation functions ---
-
 CITY_NAME_PATTERN = re.compile(r"^[\wа-яА-ЯіїєґІЇЄҐ' -]{1,32}$", re.UNICODE)
 
-
 def normalize_city_name(name: str) -> str:
-    """Replace all dashes with ASCII minus and strip spaces."""
     return (
         name
         .replace('\u2011', '-')
@@ -32,22 +28,18 @@ def normalize_city_name(name: str) -> str:
         .replace('\u2212', '-')
         .strip()
     )
-
-
+    
 def is_valid_name(name: str) -> bool:
-    """Validate user name or city name."""
     name = name.strip()
     return 1 <= len(name) <= 32 and CITY_NAME_PATTERN.fullmatch(name) is not None
 
 
 def ensure_user(users_data: dict, user_id: str) -> None:
-    """Ensure user profile exists."""
     if user_id not in users_data:
         users_data[user_id] = {"name": "", "history": [], "city": ""}
 
 
 def profile_keyboard(user_data: dict) -> InlineKeyboardMarkup:
-    """Return profile menu keyboard."""
     btn_text = "✏️Редагувати ім'я" if user_data["name"] else "✏️Додати ім'я"
     return InlineKeyboardMarkup(
         inline_keyboard=[
@@ -60,7 +52,6 @@ def profile_keyboard(user_data: dict) -> InlineKeyboardMarkup:
 
 
 def main_keyboard_with_weather(user_city: str) -> InlineKeyboardMarkup:
-    """Return main menu keyboard, with weather button if city is set."""
     kb = [
         [InlineKeyboardButton(text="👤Профіль", callback_data="profile")],
         [InlineKeyboardButton(text="🏙️Обрати місто", callback_data="show_letters")],
@@ -76,12 +67,10 @@ def main_keyboard_with_weather(user_city: str) -> InlineKeyboardMarkup:
 
 
 def get_unique_letters() -> list[str]:
-    """Return sorted unique first letters of cities."""
     return sorted(set(city[0].upper() for city in regions if city))
 
 
 def choose_letter_keyboard(letters: list[str]) -> InlineKeyboardMarkup:
-    """Return city letter selection keyboard."""
     buttons = [
         InlineKeyboardButton(text=letter, callback_data=f"letter:{letter}")
         for letter in letters
@@ -92,7 +81,6 @@ def choose_letter_keyboard(letters: list[str]) -> InlineKeyboardMarkup:
 
 
 def choose_city_keyboard(cities: list[str]) -> InlineKeyboardMarkup:
-    """Return city selection keyboard."""
     buttons = [
         InlineKeyboardButton(text=c, callback_data=f"city:{c}") for c in cities
     ]
@@ -104,7 +92,6 @@ def choose_city_keyboard(cities: list[str]) -> InlineKeyboardMarkup:
 
 
 def city_add_keyboard(city: str) -> InlineKeyboardMarkup:
-    """Return keyboard to add city to profile."""
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
@@ -116,21 +103,18 @@ def city_add_keyboard(city: str) -> InlineKeyboardMarkup:
         ]
     )
 
-
-# --- Bot init ---
-
 bot = Bot(token=BOT_TOKEN)
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 
 
 class Form(StatesGroup):
-    """States for name editing."""
+
     waiting_for_name = State()
 
 
 async def set_commands() -> None:
-    """Set bot commands for menu."""
+
     commands = [
         BotCommand(command="profile", description="Переглянути профіль"),
     ]
@@ -138,7 +122,7 @@ async def set_commands() -> None:
 
 
 async def show_profile(msg_or_callback, users_data: dict, user_id: str) -> None:
-    """Send user profile with keyboard."""
+
     user_data = users_data[user_id]
     name = user_data["name"] or "Ім'я не задано"
     city = user_data["city"] or "Місто не задано"
@@ -147,12 +131,8 @@ async def show_profile(msg_or_callback, users_data: dict, user_id: str) -> None:
         f"👤Профіль👤\nІм'я: {name}\nМісто: {city}", reply_markup=kb
     )
 
-
-# --- Handlers ---
-
 @dp.message(Command("start"))
 async def start(msg: Message, state: FSMContext) -> None:
-    """Handle /start command."""
     await state.clear()
     user_id = str(msg.from_user.id)
     users_data = load()
@@ -170,7 +150,7 @@ async def start(msg: Message, state: FSMContext) -> None:
 
 @dp.message(Command("profile"))
 async def profile(msg: Message, state: FSMContext) -> None:
-    """Handle /profile command."""
+
     await state.clear()
     user_id = str(msg.from_user.id)
     users_data = load()
@@ -181,7 +161,7 @@ async def profile(msg: Message, state: FSMContext) -> None:
 
 @dp.callback_query(F.data == "profile")
 async def profile_callback(callback: CallbackQuery, state: FSMContext) -> None:
-    """Handle profile callback."""
+
     await state.clear()
     user_id = str(callback.from_user.id)
     users_data = load()
@@ -192,7 +172,7 @@ async def profile_callback(callback: CallbackQuery, state: FSMContext) -> None:
 
 @dp.callback_query(F.data == "back")
 async def back(callback: CallbackQuery, state: FSMContext) -> None:
-    """Handle back button."""
+
     await state.clear()
     user_id = str(callback.from_user.id)
     users_data = load()
@@ -210,7 +190,6 @@ async def back(callback: CallbackQuery, state: FSMContext) -> None:
 
 @dp.callback_query(F.data == "change_name")
 async def change_name_handler(callback: CallbackQuery, state: FSMContext) -> None:
-    """Handle change name button."""
     await state.clear()
     await callback.message.answer("Введи своє ім'я (до 32 символів, лише букви, пробіли, дефіси):")
     await state.set_state(Form.waiting_for_name)
@@ -219,7 +198,6 @@ async def change_name_handler(callback: CallbackQuery, state: FSMContext) -> Non
 
 @dp.message(Form.waiting_for_name)
 async def process_name(msg: Message, state: FSMContext) -> None:
-    """Process user name input."""
     user_id = str(msg.from_user.id)
     users_data = load()
     ensure_user(users_data, user_id)
@@ -236,7 +214,6 @@ async def process_name(msg: Message, state: FSMContext) -> None:
 
 @dp.callback_query(F.data == "send_history")
 async def send_history(callback: CallbackQuery, state: FSMContext) -> None:
-    """Show user weather query history."""
     await state.clear()
     user_id = str(callback.from_user.id)
     users_data = load()
@@ -254,7 +231,7 @@ async def send_history(callback: CallbackQuery, state: FSMContext) -> None:
 
 @dp.callback_query(F.data == "show_letters")
 async def show_letters(callback: CallbackQuery, state: FSMContext) -> None:
-    """Show first-letter keyboard for city selection."""
+
     await state.clear()
     letters = get_unique_letters()
     keyboard = choose_letter_keyboard(letters)
@@ -264,7 +241,6 @@ async def show_letters(callback: CallbackQuery, state: FSMContext) -> None:
 
 @dp.callback_query(F.data.startswith("letter:"))
 async def show_cities(callback: CallbackQuery, state: FSMContext) -> None:
-    """Show city selection keyboard by letter."""
     await state.clear()
     letter = callback.data.split(":")[1]
     cities = get_cities(letter)
@@ -278,7 +254,6 @@ async def show_cities(callback: CallbackQuery, state: FSMContext) -> None:
 
 @dp.callback_query(F.data.startswith("city:"))
 async def select_city(callback: CallbackQuery, state: FSMContext) -> None:
-    """Select city and save to user profile."""
     await state.clear()
     city = normalize_city_name(callback.data.split(":", 1)[1].strip())
     if not is_valid_name(city):
@@ -297,7 +272,6 @@ async def select_city(callback: CallbackQuery, state: FSMContext) -> None:
 
 @dp.callback_query(F.data.startswith("add_city:"))
 async def add_city_callback(callback: CallbackQuery, state: FSMContext) -> None:
-    """Handle 'add city as mine' button."""
     await state.clear()
     user_id = str(callback.from_user.id)
     city = normalize_city_name(callback.data.split(":", 1)[1].strip())
@@ -316,7 +290,6 @@ async def add_city_callback(callback: CallbackQuery, state: FSMContext) -> None:
 
 @dp.callback_query(F.data.startswith("weather:"))
 async def weather_in_city(callback: CallbackQuery, state: FSMContext) -> None:
-    """Show weather for selected city."""
     await state.clear()
     city = normalize_city_name(callback.data.split(":", 1)[1].strip())
     if not is_valid_name(city):
@@ -333,7 +306,6 @@ async def weather_in_city(callback: CallbackQuery, state: FSMContext) -> None:
 
 @dp.message()
 async def get_weather_handler(msg: Message, state: FSMContext) -> None:
-    """Handle plain text messages as weather queries."""
     await state.clear()
     user_id = str(msg.from_user.id)
     users_data = load()
@@ -368,7 +340,6 @@ async def get_weather_handler(msg: Message, state: FSMContext) -> None:
 
 
 async def main() -> None:
-    """Main entry point."""
     print("✅ Бот працює")
     await set_commands()
     await dp.start_polling(bot)
